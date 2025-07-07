@@ -2,62 +2,79 @@ const express = require("express");
 const app = express();
 const PORT = 3000;
 
+// Parse JSON bodies for API endpoints
+app.use(express.json());
+
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
-app.set("view engine", "ejs");
 
 let posts = [];
+let users = [];
 
-// Home page – show all posts
-app.get("/", (req, res) => {
-	res.render("index", { posts });
+// Simple sign up - store user in memory
+app.post('/api/signup', (req, res) => {
+    const { user_id, password, name } = req.body;
+    if (users.find(u => u.user_id === user_id)) {
+        return res.status(400).json({ message: 'User exists' });
+    }
+    users.push({ user_id, password, name });
+    res.json({ message: 'Signup success' });
 });
 
-// Show form to create new post
-app.get("/new", (req, res) => {
-	res.render("new");
+// Simple sign in - verify credentials
+app.post('/api/signin', (req, res) => {
+    const { user_id, password } = req.body;
+    const user = users.find(u => u.user_id === user_id && u.password === password);
+    if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    res.json({ message: 'Signin success' });
 });
 
-// Handle new post submission
-app.post("/new", (req, res) => {
-	const { title, author, content } = req.body;
-	const newPost = {
-		id: Date.now().toString(),
-		title,
-		author,
-		content,
-		date: new Date().toLocaleString(),
-	};
-	posts.unshift(newPost);
-	res.redirect("/");
+// ----- Blog post API endpoints -----
+app.get('/api/posts', (req, res) => {
+    res.json(posts);
 });
 
-// Show form to edit a post
-app.get("/edit/:id", (req, res) => {
-	const post = posts.find((p) => p.id === req.params.id);
-	if (post) {
-		res.render("edit", { post });
-	} else {
-		res.redirect("/");
-	}
+app.post('/api/posts', (req, res) => {
+    const { title, author, content } = req.body;
+    const newPost = {
+        id: Date.now().toString(),
+        title,
+        author,
+        content,
+        date: new Date().toLocaleString()
+    };
+    posts.unshift(newPost);
+    res.json(newPost);
 });
 
-// Handle post edit
-app.post("/edit/:id", (req, res) => {
-	const { title, author, content } = req.body;
-	const post = posts.find((p) => p.id === req.params.id);
-	if (post) {
-		post.title = title;
-		post.author = author;
-		post.content = content;
-	}
-	res.redirect("/");
+app.put('/api/posts/:id', (req, res) => {
+    const { title, author, content } = req.body;
+    const post = posts.find(p => p.id === req.params.id);
+    if (!post) return res.status(404).json({ message: 'Not found' });
+    if (post.author !== author) {
+        return res.status(403).json({ message: 'Forbidden' });
+    }
+    post.title = title;
+    post.content = content;
+    res.json(post);
 });
 
-// Handle delete
-app.get("/delete/:id", (req, res) => {
-	posts = posts.filter((p) => p.id !== req.params.id);
-	res.redirect("/");
+app.delete('/api/posts/:id', (req, res) => {
+    const { author } = req.body;
+    const post = posts.find(p => p.id === req.params.id);
+    if (!post) return res.status(404).json({ message: 'Not found' });
+    if (post.author !== author) {
+        return res.status(403).json({ message: 'Forbidden' });
+    }
+    posts = posts.filter(p => p.id !== req.params.id);
+    res.json({ message: 'Deleted' });
+});
+
+// Serve the React frontend
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
 });
 
 app.listen(PORT, () => {
