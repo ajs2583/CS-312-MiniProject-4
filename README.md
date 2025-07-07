@@ -1,11 +1,10 @@
 # Blog Application (Mini Project 4)
 
-This project provides a small blogging platform built with **Express** and a minimal **React** frontend served from the `public` folder. Posts and users are stored in memory for simplicity.
+This project provides a small blogging platform built with Node's built-in **http** module and a minimal **React** frontend served from the `public` folder. Posts and users are stored in memory for simplicity.
 
 ## Running the application
 
 ```bash
-npm install
 npm start
 ```
 
