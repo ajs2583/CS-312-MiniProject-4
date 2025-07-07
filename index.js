@@ -112,8 +112,8 @@ const server = http.createServer(async (req, res) => {
     return serveStatic(res, path.join(__dirname, 'public', 'styles.css'), 'text/css');
   }
 
-  if (req.method === 'GET' && pathname === '/app.js') {
-    return serveStatic(res, path.join(__dirname, 'public', 'app.js'), 'application/javascript');
+  if (req.method === 'GET' && pathname === '/main.js') {
+    return serveStatic(res, path.join(__dirname, 'public', 'main.js'), 'application/javascript');
   }
 
   if (req.method === 'POST' && pathname === '/api/signup') return handleSignup(req, res);
