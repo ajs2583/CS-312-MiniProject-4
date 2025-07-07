@@ -32,3 +32,10 @@ button {
 .post {
 	margin-bottom: 20px;
 }
+form {
+    margin-bottom: 20px;
+}
+
+input, textarea {
+    margin-bottom: 10px;
+}
